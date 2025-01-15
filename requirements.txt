@@ -7,4 +7,5 @@ catboost
 Flask
 dill
 xgboost
--e .
+setuptools
+# -e .

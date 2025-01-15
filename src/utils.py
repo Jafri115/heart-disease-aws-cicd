@@ -3,9 +3,10 @@ import sys
 import numpy as np
 import pandas as pd
 import dill
-from sklearn.metrics import r2_score
-from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
+from src.logger import logging
 from src.exceptions import CustomException
 
 def save_object(file_path:str,obj):
@@ -26,12 +27,22 @@ def evaluate_models(X_train, y_train, X_test, y_test, models, param):
 
         for i in range(len(list(models))):
             model_name = list(models.keys())[i]
+            print(f"Training {model_name}...")
+            logging.info(f"Training {model_name}...")
             model = list(models.values())[i]
             para = param[model_name]
+            cv = StratifiedKFold(n_splits=3)
+            
+            def report_nan_scores(cv_results):
+                for i, score in enumerate(cv_results['mean_test_score']):
+                    if np.isnan(score):
+                        print(f"NaN score for parameters: {cv_results['params'][i]}")
 
             # Hyperparameter tuning
-            gs = GridSearchCV(model, para, cv=3, scoring='f1', n_jobs=-1)
+            gs = GridSearchCV(model, para, cv=cv, scoring='f1', n_jobs=-1)
             gs.fit(X_train, y_train)
+            
+            report_nan_scores(gs.cv_results_)
 
             # Set the best parameters and refit the model
             model.set_params(**gs.best_params_)
@@ -41,23 +52,14 @@ def evaluate_models(X_train, y_train, X_test, y_test, models, param):
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
 
-            # Evaluate the model
-            train_accuracy = accuracy_score(y_train, y_train_pred)
-            test_accuracy = accuracy_score(y_test, y_test_pred)
-            test_f1 = f1_score(y_test, y_test_pred)
+            test_model_score = f1_score(y_test, y_test_pred)
 
-            # Store the test F1-score in the report
-            report[model_name] = {
-                'Train Accuracy': train_accuracy,
-                'Test Accuracy': test_accuracy,
-                'Test F1-Score': test_f1
-            }
+            report[list(models.keys())[i]] = test_model_score
 
         return report
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return {}
+        raise CustomException(e, sys)
     
 def load_object(file_path:str):
     '''

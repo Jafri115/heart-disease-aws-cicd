@@ -1,5 +1,7 @@
 import os
 import sys
+from src.components.data_transfromation import DataTransformation
+from src.components.model_trainer import ModelTrainer
 from src.exceptions import CustomException
 from src.logger import logging
 import pandas as pd
@@ -7,7 +9,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
-
+import warnings
+warnings.filterwarnings("ignore")
 @dataclass
 class DataIngestionConfig:
     '''
@@ -55,6 +58,12 @@ if __name__ == "__main__":
     data_ingestion = DataIngestion()
     train_data_path,test_data_path = data_ingestion.initiate_data_ingestion()
     
+    data_transformation = DataTransformation()
+    train_arr, test_arr, preproceesor_path = data_transformation.initiate_data_transformation(train_data_path,test_data_path)
+    
+    modeltrainer=ModelTrainer()
+    print(modeltrainer.initiate_model_trainer(train_arr,test_arr))
+    
     logging.info(f"Train data path: {train_data_path}")
     logging.info(f"Test data path: {test_data_path}")
-    
+    logging.info(f"Preprocessor path: {preproceesor_path}")
