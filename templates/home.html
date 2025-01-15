@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prediction</title>
+    <style>
+        /* Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://file.the-yuan.com/KUpload/image/20230116/20230116084737_9201.png'); /* Replace with your image URL */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        /* Form Container */
+        .container {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+        /* Form Row */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1 1 30%; /* Adjusted for 3 fields per row */
+            margin-right: 10px;
+        }
+        .form-group:last-child {
+            margin-right: 0;
+        }
+        .form-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        /* Button Styling */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Disease Prediction</h1>
+        <form action="{{ url_for('predict_datapoint')}}" method="post">
+            <!-- Row 1 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input class="form-control" type="number" name="age" placeholder="Enter Age" min="18" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sex</label>
+                    <select class="form-control" name="sex" required>
+                        <option selected disabled value="">Select Sex</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chest Pain Type</label>
+                    <select class="form-control" name="chest_pain_type" required>
+                        <option selected disabled value="">Select Type</option>
+                        <option value="ATA">ATA</option>
+                        <option value="NAP">NAP</option>
+                        <option value="ASY">ASY</option>
+                        <option value="TA">TA</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Row 2 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Resting BP (mm Hg)</label>
+                    <input class="form-control" type="number" name="resting_bp" placeholder="Enter Resting BP" min="90" max="200" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cholesterol (mg/dL)</label>
+                    <input class="form-control" type="number" name="cholesterol" placeholder="Enter Cholesterol" min="100" max="600" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fasting BS</label>
+                    <select class="form-control" name="fasting_bs" required>
+                        <option selected disabled value="">Select</option>
+                        <option value="0">0 (≤ 120 mg/dL)</option>
+                        <option value="1">1 (> 120 mg/dL)</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Row 3 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Resting ECG</label>
+                    <select class="form-control" name="resting_ecg" required>
+                        <option selected disabled value="">Select ECG</option>
+                        <option value="Normal">Normal</option>
+                        <option value="ST">ST</option>
+                        <option value="LVH">LVH</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max HR (bpm)</label>
+                    <input class="form-control" type="number" name="max_hr" placeholder="Enter Max HR" min="60" max="202" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Exercise Angina</label>
+                    <select class="form-control" name="exercise_angina" required>
+                        <option selected disabled value="">Select</option>
+                        <option value="N">No</option>
+                        <option value="Y">Yes</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Row 4 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Oldpeak</label>
+                    <input class="form-control" type="number" name="oldpeak" placeholder="Enter Oldpeak" step="0.1" min="-2.6" max="6.2" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ST Slope</label>
+                    <select class="form-control" name="st_slope" required>
+                        <option selected disabled value="">Select</option>
+                        <option value="Up">Up</option>
+                        <option value="Flat">Flat</option>
+                        <option value="Down">Down</option>
+                    </select>
+                </div>
+            </div>
+
+            <input class="btn" type="submit" value="Predict Heart Disease">
+        </form>
+        <h2>{{result}}</h2>
+    </div>
+</body>
+</html>
