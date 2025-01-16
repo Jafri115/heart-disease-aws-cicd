@@ -86,9 +86,14 @@ jobs:
         run: |
          docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{secrets.ECR_REPOSITORY_NAME}}:latest
          
-      - name: Stop and remove  container if running
+      - name: Stop and remove container if running
         run: |
-         docker ps -q --filter "name=heartdisease-predictor" | grep -q . && docker stop heartdisease-predictor && docker rm -fv heartdisease-predictor
+          if [ "$(docker ps -q --filter "name=heartdisease-predictor")" ]; then
+            docker stop heartdisease-predictor
+            docker rm -fv heartdisease-predictor
+          else
+            echo "Container heartdisease-predictor is not running."
+          fi
        
       - name: Run Docker Image to serve users
         run: |
