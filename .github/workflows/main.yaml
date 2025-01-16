@@ -89,11 +89,17 @@ jobs:
       - name: Stop and remove container if running
         run: |
           if [ "$(docker ps -q --filter "name=heartdisease-predictor")" ]; then
-            docker stop heartdisease-predictor
-            docker rm -fv heartdisease-predictor
+            echo "Stopping container heartdisease-predictor..."
+            docker stop heartdisease-predictor || true
+            echo "Waiting for Docker to finish cleanup..."
+            sleep 5
+            echo "Removing container heartdisease-predictor..."
+            docker rm -fv heartdisease-predictor || true
           else
             echo "Container heartdisease-predictor is not running."
           fi
+          echo "Cleaning up dangling containers..."
+          docker container prune -f
        
       - name: Run Docker Image to serve users
         run: |
