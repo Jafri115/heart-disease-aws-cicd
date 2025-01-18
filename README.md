@@ -1,5 +1,7 @@
 # AWS CI/ CD ML Project 
 
+<img src="img/page.png" alt="Screenshot of Web Application" title="Optional Title" width="50%">
+
 
 ## Prerequisites
 1. Basic knowledge of Docker.
