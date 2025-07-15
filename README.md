@@ -180,3 +180,26 @@ Add the following secrets in your GitHub repository:
 
 ---
 
+## 7. Running the Pipelines
+
+### Train the model
+Execute the training pipeline to create the model and preprocessor artifacts:
+
+```bash
+python src/pipeline/train_pipeline.py
+```
+
+### Make predictions
+After training, start the web application and open `http://localhost:5000` in your browser:
+
+```bash
+python app.py
+```
+
+### Evaluate the model
+Run the evaluation script to compute metrics on the test set and save them to `artifacts/eval_results.json`:
+
+```bash
+python evaluate.py
+```
+
