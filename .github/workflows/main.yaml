@@ -44,6 +44,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -63,47 +65,56 @@ jobs:
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
           
-  Continuous-Deployment:
-    needs: build-and-push-ecr-image
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+Continuous-Deployment:
+  needs: build-and-push-ecr-image
+  runs-on: self-hosted
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-      
-      
-      - name: Pull latest images
-        run: |
-         docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{secrets.ECR_REPOSITORY_NAME}}:latest
-         
-      - name: Stop and remove container if running
-        run: |
-          if [ "$(docker ps -q --filter "name=heartdisease-predictor")" ]; then
-            echo "Stopping container heartdisease-predictor..."
-            docker stop heartdisease-predictor || true
-            echo "Waiting for Docker to finish cleanup..."
-            sleep 5
-            echo "Removing container heartdisease-predictor..."
-            docker rm -fv heartdisease-predictor || true
-          else
-            echo "Container heartdisease-predictor is not running."
-          fi
-          echo "Cleaning up dangling containers..."
-          docker container prune -f
-       
-      - name: Run Docker Image to serve users
-        run: |
-         docker run --rm -d -p 8080:8080 --ipc="host" --name=heartdisease-predictor -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -e 'AWS_REGION=${{ secrets.AWS_REGION }}'  ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-      - name: Clean previous images and containers
-        run: |
-         docker system prune -f
+    - name: Clean up previous containers
+      run: |
+        CONTAINER_NAME="heartdisease-predictor"
+        if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+          echo "Stopping and removing existing container: $CONTAINER_NAME..."
+          docker stop $CONTAINER_NAME || true
+          docker rm -fv $CONTAINER_NAME || true
+        else
+          echo "No running container named $CONTAINER_NAME found."
+        fi
+        echo "Cleaning up dangling containers..."
+        docker container prune -f
+
+    - name: Remove existing Docker image if it exists
+      run: |
+        IMAGE_NAME="${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest"
+        if [ "$(docker images -q $IMAGE_NAME)" ]; then
+          echo "Removing existing image: $IMAGE_NAME..."
+          docker rmi -f $IMAGE_NAME || true
+        else
+          echo "No existing image found with name $IMAGE_NAME."
+        fi
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Pull latest images
+      run: |
+        docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+    - name: Run Docker Image to serve users
+      run: |
+        docker run --rm -d -p 8080:8080 --ipc="host" \
+          --name=heartdisease-predictor \
+          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
+          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
+          -e 'AWS_REGION=${{ secrets.AWS_REGION }}' \
+          ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest

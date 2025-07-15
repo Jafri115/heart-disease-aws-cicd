@@ -1,0 +1,40 @@
+heart-disease-aws-cicd/
++-- heart-disease-aws-cicd
+|   +-- .gitignore
+|   +-- app.py
+|   +-- demo.py
+|   +-- Dockerfile
+|   +-- evaluate.py
+|   +-- generate-project-structure.ps1
+|   +-- project_structure.txt
+|   +-- README.md
+|   +-- requirements.txt
+|   +-- setup.py
+|   +-- artifacts
+|   |   +-- model.pkl
+|   |   +-- preprocessor.pkl
+|   |   +-- test.csv
+|   |   +-- train.csv
+|   +-- img
+|   |   +-- page.png
+|   +-- notebook
+|   |   +-- 1. EDA Heart Disease.ipynb
+|   |   +-- 2_Model_Training_Heart_disease.ipynb
+|   +-- src
+|   |   +-- exceptions.py
+|   |   +-- logger.py
+|   |   +-- utils.py
+|   |   +-- __init__.py
+|   |   +-- components
+|   |   |   +-- data_ingestion.py
+|   |   |   +-- data_transfromation.py
+|   |   |   +-- model_trainer.py
+|   |   |   +-- __init__.py
+|   |   +-- pipeline
+|   |   |   +-- predict_pipeline.py
+|   |   |   +-- train_pipeline.py
+|   |   |   +-- __init__.py
+|   +-- templates
+|   |   +-- background.jpeg
+|   |   +-- home.html
+|   |   +-- index.html

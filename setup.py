@@ -1,3 +1,4 @@
+# setup.py
 from setuptools import setup, find_packages # type: ignore
 from typing import List
 HYPEN_E_DOT= '-e .'
