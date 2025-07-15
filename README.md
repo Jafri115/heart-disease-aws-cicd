@@ -21,6 +21,23 @@ The training data resides in `notebook/data/heart.csv` and combines 918 observat
 
 The label **HeartDisease** indicates whether the patient has heart disease (`1`) or not (`0`).
 
+## Model Evaluation
+The dataset was split 80/20 into training and test sets. A simple logistic regression model, implemented from scratch in `evaluate.py`, achieved the following results on the test set:
+
+| Metric | Value |
+| ------ | ----- |
+| Accuracy | 0.80 |
+| Precision | 0.84 |
+| Recall | 0.79 |
+| F1 Score | 0.82 |
+
+Confusion matrix:
+
+| Actual \ Predicted | 0 | 1 |
+| ------------------ | - | - |
+| 0 | 68 | 15 |
+| 1 | 21 | 80 |
+
 ## Prerequisites
 1. Basic knowledge of Docker.
 2. A working AWS account.
