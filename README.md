@@ -1,7 +1,25 @@
-# AWS CI/ CD ML Project 
-
+# AWS CI/ CD ML Project # Heart Disease Prediction with AWS CI/CD
 <img src="img/page.png" alt="Screenshot of Web Application" title="Optional Title" width="50%">
 
+## Overview
+Predicting heart disease enables clinicians and patients to identify risks early and take preventive action. This repository contains a machine learning solution that trains a classification model on patient attributes and demonstrates how to deploy it to AWS using a CI/CD pipeline.
+
+## Dataset
+The training data resides in `notebook/data/heart.csv` and combines 918 observations from multiple heart disease studies. It includes the following 11 features:
+
+- **Age** – age in years
+- **Sex** – patient gender (`M` or `F`)
+- **ChestPainType** – chest pain category (`TA`, `ATA`, `NAP`, `ASY`)
+- **RestingBP** – resting blood pressure in mm Hg
+- **Cholesterol** – serum cholesterol in mg/dl
+- **FastingBS** – `1` if fasting blood sugar > 120 mg/dl, else `0`
+- **RestingECG** – ECG results (`Normal`, `ST`, `LVH`)
+- **MaxHR** – maximum heart rate achieved
+- **ExerciseAngina** – `Y` for exercise‑induced angina, else `N`
+- **Oldpeak** – ST depression induced by exercise
+- **ST_Slope** – slope of the peak exercise ST segment (`Up`, `Flat`, `Down`)
+
+The label **HeartDisease** indicates whether the patient has heart disease (`1`) or not (`0`).
 
 ## Prerequisites
 1. Basic knowledge of Docker.
