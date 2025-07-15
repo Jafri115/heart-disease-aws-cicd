@@ -67,7 +67,49 @@ class ModelTrainer:
 
             params = {
                 # [Your parameter grid remains unchanged...]
+                "Logistic Regression": {
+                    'C': [0.01, 0.1, 1],
+                    'penalty': ['l2'],  # Use only 'l2' for 'lbfgs'
+                    'solver': ['lbfgs']
+                },
+                "K-Neighbors Classifier": {
+                    'n_neighbors': [3, 5, 7, 9, 11, 15],
+                    'weights': ['uniform', 'distance'],
+                    'metric': ['euclidean', 'manhattan', 'minkowski']
+                },
+                "Support Vector Classifier": {
+                    'C': [0.1, 1, 10, 100],
+                    'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                    'gamma': ['scale', 'auto'],
+                    'degree': [2, 3, 4]
+                },
+                "Decision Tree Classifier": {
+                    'criterion': ['gini', 'entropy', 'log_loss'],
+                    'max_depth': [None, 10, 20, 30, 40, 50],
+                    'min_samples_split': [2, 5, 10],
+                    'min_samples_leaf': [1, 2, 4]
+                },
+                "Random Forest Classifier": {
+                    'n_estimators': [50, 100, 200, 300, 400],
+                    'criterion': ['gini', 'entropy'],
+                    'max_features': ['sqrt', 'log2', None],
+                    'max_depth': [None, 10, 20, 30],
+                    'min_samples_split': [2, 5, 10]
+                },
+                "CatBoost Classifier": {
+                    'depth': [4, 6, 8, 10],
+                    'learning_rate': [0.01, 0.05, 0.1, 0.2],
+                    'iterations': [50, 100, 200],
+                    'l2_leaf_reg': [1, 3, 5, 7]
+                },
+                "AdaBoost Classifier": {
+                    'n_estimators': [50, 100, 200],
+                    'learning_rate': [0.01, 0.1, 0.5, 1.0],
+                    'algorithm': ['SAMME', 'SAMME.R']
+                }
+
             }
+
 
             logging.info("Starting model evaluation and hyperparameter tuning.")
             model_report: dict = evaluate_models(

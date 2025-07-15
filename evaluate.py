@@ -1,124 +1,60 @@
-# evaluate.py
-import csv
-import math
-import random
+import argparse
+import json
+import os
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
-def load_data(path):
-    cat_maps = {
-        'Sex': {'M': 1.0, 'F': 0.0},
-        'ChestPainType': {'TA': 0.0, 'ATA': 1.0, 'NAP': 2.0, 'ASY': 3.0},
-        'RestingECG': {'Normal': 0.0, 'ST': 1.0, 'LVH': 2.0},
-        'ExerciseAngina': {'N': 0.0, 'Y': 1.0},
-        'ST_Slope': {'Up': 0.0, 'Flat': 1.0, 'Down': 2.0}
-    }
-    features = []
-    labels = []
-    with open(path, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            feat = [
-                float(row['Age']),
-                float(row['RestingBP']),
-                float(row['Cholesterol']),
-                float(row['FastingBS']),
-                float(row['MaxHR']),
-                float(row['Oldpeak']),
-                cat_maps['Sex'][row['Sex']],
-                cat_maps['ChestPainType'][row['ChestPainType']],
-                cat_maps['RestingECG'][row['RestingECG']],
-                cat_maps['ExerciseAngina'][row['ExerciseAngina']],
-                cat_maps['ST_Slope'][row['ST_Slope']],
-            ]
-            label = int(row['HeartDisease'])
-            features.append(feat)
-            labels.append(label)
-    return features, labels
+from src.utils import load_object
 
-def train_test_split(features, labels, test_ratio=0.2, seed=42):
-    data = list(zip(features, labels))
-    random.seed(seed)
-    random.shuffle(data)
-    split = int(len(data) * (1 - test_ratio))
-    train = data[:split]
-    test = data[split:]
-    X_train, y_train = zip(*train)
-    X_test, y_test = zip(*test)
-    return list(X_train), list(y_train), list(X_test), list(y_test)
 
-def standardize(train, test):
-    n_features = len(train[0])
-    means = [0.0]*n_features
-    stds = [0.0]*n_features
-    for j in range(n_features):
-        col = [row[j] for row in train]
-        means[j] = sum(col) / len(col)
-        var = sum((x - means[j])**2 for x in col) / len(col)
-        stds[j] = math.sqrt(var) if var > 0 else 1.0
-    def transform(dataset):
-        return [[(row[j] - means[j]) / stds[j] for j in range(n_features)] for row in dataset]
-    return transform(train), transform(test)
+def load_data(path: str):
+    """Load dataset and return features and target."""
+    df = pd.read_csv(path)
+    y = df["HeartDisease"]
+    X = df.drop("HeartDisease", axis=1)
+    return X, y
 
-def sigmoid(x):
-    return 1.0 / (1.0 + math.exp(-x))
 
-def train_log_reg(X, y, lr=0.1, epochs=200):
-    n = len(X[0])
-    weights = [0.0]*n
-    bias = 0.0
-    for _ in range(epochs):
-        for xi, yi in zip(X, y):
-            z = sum(w*x for w, x in zip(weights, xi)) + bias
-            yhat = sigmoid(z)
-            error = yhat - yi
-            for j in range(n):
-                weights[j] -= lr * error * xi[j]
-            bias -= lr * error
-    return weights, bias
+def evaluate(model, X, y):
+    """Return basic classification metrics including AUC."""
+    preds = model.predict(X)
+    try:
+        probs = model.predict_proba(X)[:, 1]
+    except AttributeError:
+        # Some models may not have predict_proba (e.g., SVM with no probability=True)
+        probs = model.decision_function(X)
 
-def predict(weights, bias, X):
-    preds = []
-    for xi in X:
-        z = sum(w*x for w, x in zip(weights, xi)) + bias
-        yhat = sigmoid(z)
-        preds.append(1 if yhat >= 0.5 else 0)
-    return preds
-
-def evaluate(y_true, y_pred):
-    tp = tn = fp = fn = 0
-    for y, p in zip(y_true, y_pred):
-        if y == 1 and p == 1:
-            tp += 1
-        elif y == 0 and p == 0:
-            tn += 1
-        elif y == 0 and p == 1:
-            fp += 1
-        else:
-            fn += 1
-    total = tp + tn + fp + fn
-    accuracy = (tp + tn) / total if total else 0.0
-    precision = tp / (tp + fp) if (tp + fp) else 0.0
-    recall = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
     return {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'f1': f1,
-        'tp': tp,
-        'tn': tn,
-        'fp': fp,
-        'fn': fn
+        "accuracy": accuracy_score(y, preds),
+        "precision": precision_score(y, preds),
+        "recall": recall_score(y, preds),
+        "f1": f1_score(y, preds),
+        "auc": roc_auc_score(y, probs),
     }
 
-def main():
-    X, y = load_data('notebook/data/heart.csv')
-    X_train, y_train, X_test, y_test = train_test_split(X, y)
-    X_train, X_test = standardize(X_train, X_test)
-    weights, bias = train_log_reg(X_train, y_train)
-    preds = predict(weights, bias, X_test)
-    metrics = evaluate(y_test, preds)
-    for k,v in metrics.items():
-        print(f'{k}: {v}')
 
-if __name__ == '__main__':
-    main()
+def main(model_path: str, preprocessor_path: str, data_path: str, output_path: str) -> None:
+    model = load_object(model_path)
+    preprocessor = load_object(preprocessor_path)
+
+    X, y = load_data(data_path)
+    X_proc = preprocessor.transform(X)
+
+    metrics = evaluate(model, X_proc, y)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(metrics, f, indent=2)
+
+    for k, v in metrics.items():
+        print(f"{k}: {v:.4f}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Evaluate a trained model")
+    parser.add_argument("--model", default="artifacts/model.pkl", help="Path to trained model pickle")
+    parser.add_argument("--preprocessor", default="artifacts/preprocessor.pkl", help="Path to preprocessor pickle")
+    parser.add_argument("--data", default="artifacts/test.csv", help="CSV file with evaluation data")
+    parser.add_argument("--output", default="artifacts/eval_results.json", help="Where to save metrics JSON")
+    args = parser.parse_args()
+
+    main(args.model, args.preprocessor, args.data, args.output)
