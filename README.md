@@ -1,4 +1,4 @@
-# AWS CI/ CD ML Project # Heart Disease Prediction with AWS CI/CD
+# Heart Disease Prediction with AWS CI/CD
 <img src="img/page.png" alt="Screenshot of Web Application" title="Optional Title" width="50%">
 
 ## Overview
